@@ -1,8 +1,8 @@
-#![cfg_attr(target_os = "windows", feature(windows_process_extensions_main_thread_handle))]
+#![cfg_attr(not(target_os = "android"), feature(once_cell_try))]
 
 pub mod error;
 
-#[cfg(not(target_env = "musl"))]
+#[cfg(all(not(target_os = "android"), not(target_env = "musl")))]
 mod ipc;
 
 #[cfg(unix)]

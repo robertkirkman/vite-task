@@ -7,8 +7,8 @@ publish = false
 
 [target.'cfg(target_os = "linux")'.dependencies]
 wincode = { workspace = true, features = ["derive"] }
-libc = { workspace = true }
-nix = { workspace = true, features = ["process", "fs", "poll", "socket", "uio"] }
+#libc = { workspace = true }
+#nix = { workspace = true, features = ["process", "fs", "poll", "socket", "uio"] }
 passfd = { workspace = true, default-features = false, optional = true }
 seccompiler = { workspace = true }
 syscalls = { workspace = true, features = ["std"] }
@@ -23,6 +23,12 @@ futures-util = { workspace = true }
 nix = { workspace = true, features = ["fs"] }
 test-log = { workspace = true }
 tokio = { workspace = true, features = ["macros", "time"] }
+
+[target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
+libc = { workspace = true }
+nix = { workspace = true, features = ["process", "fs", "poll", "socket", "uio"] }
+wincode = { workspace = true, features = ["derive"] }
+passfd = { workspace = true, default-features = false, optional = true }
 
 [features]
 supervisor = ["dep:passfd", "passfd/async"]

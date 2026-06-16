@@ -1,11 +1,11 @@
-#[cfg(not(target_env = "musl"))]
+#[cfg(all(not(target_os = "android"), not(target_env = "musl")))]
 use std::{ffi::OsStr, os::unix::ffi::OsStrExt as _, path::Path};
 
 use fspy_seccomp_unotify::{payload::SeccompPayload, target::install_target};
-#[cfg(not(target_env = "musl"))]
+#[cfg(all(not(target_os = "android"), not(target_env = "musl")))]
 use memmap2::Mmap;
 
-#[cfg(not(target_env = "musl"))]
+#[cfg(all(not(target_os = "android"), not(target_env = "musl")))]
 use crate::{
     elf,
     exec::{append_path_env, ensure_env},
@@ -32,11 +32,11 @@ impl PreExec {
 
 pub fn handle_exec(
     command: &mut Exec,
-    encoded_payload: &EncodedPayload,
+    #[cfg_attr(target_os = "android", allow(unused))] encoded_payload: &EncodedPayload,
 ) -> nix::Result<Option<PreExec>> {
     // On musl targets, LD_PRELOAD is not available (cdylib not supported).
     // Always use seccomp-based tracking instead.
-    #[cfg(not(target_env = "musl"))]
+    #[cfg(all(not(target_os = "android"), not(target_env = "musl")))]
     {
         let executable_fd = open_executable(Path::new(OsStr::from_bytes(&command.program)))?;
         // SAFETY: The file descriptor is valid and we only read from the mapping.
@@ -59,5 +59,8 @@ pub fn handle_exec(
     }
 
     command.envs.retain(|(name, _)| name != LD_PRELOAD && name != PAYLOAD_ENV_NAME);
+    #[cfg(target_os = "android")]
+    return Ok(None);
+    #[cfg(target_os = "linux")]
     Ok(Some(PreExec(encoded_payload.payload.seccomp_payload.clone())))
 }
